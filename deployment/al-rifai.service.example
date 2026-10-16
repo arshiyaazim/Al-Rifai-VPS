@@ -1,0 +1,18 @@
+[Unit]
+Description=Al-Rifai live vessel register
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/vps/apps/al-rifai
+Environment=NODE_ENV=production
+ExecStart=/ABSOLUTE/PATH/TO/node --experimental-strip-types --env-file=/opt/vps/apps/al-rifai/.env /opt/vps/apps/al-rifai/server/index.mjs
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+UMask=0077
+[Install]
+WantedBy=multi-user.target

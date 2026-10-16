@@ -1,0 +1,2 @@
+export function csv(headers:string[],rows:(string|number|null)[][]){const escape=(value:string|number|null)=>{let s=String(value??"");if(/^[\s]*[=+@-]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};return '\uFEFF'+[headers,...rows].map(row=>row.map(escape).join(',')).join('\r\n');}
+export function saveCsv(contents:string,name:string){const url=URL.createObjectURL(new Blob([contents],{type:"text/csv;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}

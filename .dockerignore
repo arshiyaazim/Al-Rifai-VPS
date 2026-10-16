@@ -1,0 +1,16 @@
+node_modules
+dist
+.env
+.env.*
+.git
+runtime
+*.zip
+tests
+
+__pycache__
+*.pyc
+auth_info
+store
+downloads
+uploads
+integrations/*.env

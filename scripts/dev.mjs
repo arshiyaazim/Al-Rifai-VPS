@@ -1,0 +1,2 @@
+import{spawn}from'node:child_process';
+const children=[spawn(process.execPath,['--experimental-strip-types','--env-file-if-exists=.env','server/index.mjs'],{stdio:'inherit',env:{...process.env,APP_ORIGIN:'http://localhost:5173',COOKIE_SECURE:'false'}}),spawn(process.execPath,['node_modules/vite/bin/vite.js','--host','127.0.0.1'],{stdio:'inherit'})];for(const s of['SIGINT','SIGTERM'])process.on(s,()=>children.forEach(c=>c.kill(s)));for(const c of children)c.on('exit',code=>{if(code)children.forEach(other=>other.kill());});

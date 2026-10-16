@@ -1,0 +1,2 @@
+# For XLSX uploads. TXT/CSV/JSON parsing uses Python's standard library.
+openpyxl==3.1.5

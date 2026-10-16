@@ -1,0 +1,17 @@
+[Unit]
+Description=Al-Rifai read-only WhatsApp intake
+After=network-online.target al-rifai.service
+Wants=network-online.target
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/vps/apps/al-rifai
+ExecStart=/ABSOLUTE/PATH/TO/node --env-file=/opt/vps/apps/al-rifai/integrations/mcp.env /opt/vps/apps/al-rifai/integrations/mcp-consumer.mjs
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+UMask=0077
+[Install]
+WantedBy=multi-user.target

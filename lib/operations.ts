@@ -1,0 +1,4 @@
+export type CashRow={id:string;accountantName?:string;accountantId?:string;date:string;time:string;employeePhone:string;payoutPhone:string;name:string;amountCents:number;method:string;source:string;sourceId:string;sourceLine:number;sourceText:string;sender:string;category:string;status:string;purpose:string;issues:string[];provenance?:string;identityVerified?:boolean;identityRule?:string;senderPhone?:string;receiverIdentity?:string};
+export type ReviewRow={id:string;date:string;time:string;body:string;sender:string;line:number;reason:string;status?:string;note?:string};
+export type PaymentDraft={id:string;name:string;employeePhone:string;payoutPhone:string;method:string;amountCents:number;purpose:string;date:string;instruction:string;createdAt?:string};
+export const money=(cents:number)=>new Intl.NumberFormat('en-BD',{style:'currency',currency:'BDT',maximumFractionDigits:2}).format(cents/100);
