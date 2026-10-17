@@ -39,3 +39,10 @@ Read README, docs/OWNER-REQUIREMENTS.md, docs/REQUIREMENTS.md and docs/VALIDATIO
 Run npm test (140 baseline + 107 routing/import checks), npm run check, npm run build. Tests use synthetic fixtures, actual HTTP/Python and temporary disk-backed PGlite PostgreSQL 18.6, not pg TCP or real WhatsApp. Update exact totals when tests change. No Docker/VPS/provider/browser QA was performed here. Real gateway/canonical import remains unconnected. Poll window/history coverage is not universal; gaps must stop cursor advancement, not hide missing data. No outbound WhatsApp tools. Do not claim all real messages can never be missing/duplicate without source reconciliation.
 
 No production data, real chat exports, secrets, auth cache, node_modules/dist or temporary DBs belong in the ZIP. Preserve original source ZIP and historical provenance. Keep README/API/setup/validation and SOURCE-MANIFEST aligned with final code.
+
+
+## Permanent cash-payment rule — Owner authorization
+
+For all WhatsApp cash routes (live intake, parsing, reconciliation/backfill, API, SQL/business writer and UI display), use the mandatory Owner → Accountant gate documented in README. Sender must match private `CASH_OWNER_PHONE`; actual recipient and direct chat JID must resolve to private `CASH_ACCOUNTANT_PHONE`; payment intent and reliable employee mobile are required; validate amount/details/source/timestamp; deduplicate source messages and payment instructions. Body text alone cannot prove recipient. Block unresolved JID/LID, all group-chat cash, Accountant-originated messages, ordinary chat and mismatched identities. Any missing/uncertain requirement means review only, no Cash Transaction. Never treat a payment instruction as proof of payment receipt.
+
+Keep verified real identity details out of this public repository. Put actual phone numbers only in the private VPS `.env`; leave `.env.example` blank. Do not change the fixed frontend URL, application flow, or cash-payment behavior except for this explicit safety gate. Do not deploy, publish, migrate production data or restart services as part of repository changes.
