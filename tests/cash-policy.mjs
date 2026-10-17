@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {routeMessage} from '../server/routing.mjs';
+import {normalizeMessage} from '../integrations/mcp-consumer.mjs';
 const owner='01880446111', accountant='01912345678', chat=accountant+'@s.whatsapp.net';
 const now=new Date().toISOString(), earlier=new Date(Date.now()-60000).toISOString();
 const config={bindingId:'binding-fixed',status:'active',domain:'accounts',permission:'accounts_direct',conversationType:'direct',chatId:chat,account:{id:'owner-account',kind:'account',phone:owner,status:'active'},party:{id:'accountant-party',kind:'accountant',name:'Verified fixture',status:'active'},contact:{id:'accountant-contact',phone:accountant,status:'active'},effectiveFrom:earlier,effectiveUntil:'',invalid:false};
@@ -18,4 +19,5 @@ assert.equal(route(message({chatId:'120363400000000000@g.us',conversationType:'g
 assert.equal(route(message({chatId:'151539800895531@lid'})).financeAllowed,false,'unresolved LID is blocked');
 assert.equal(route(message({text:'Hello, how are you?'})).financeAllowed,false,'ordinary conversation is not a cash instruction');
 assert.equal(route(message({senderPhone:'01899999999'})).financeAllowed,false,'unknown sender is blocked');
-console.log('Cash payment identity gate: 8 checks passed');
+const normalized=normalizeMessage({id:'source-id-1',timestamp:now,text:'cash 500/-',fromMe:false,sender_jid:'151539800895531@lid',sender_lid:'151539800895531@lid',recipient_jid:'01880446111@s.whatsapp.net'},chat,{phone:owner,jid:owner+'@s.whatsapp.net',name:'Fixture Owner'});assert.equal(normalized.metadata.identityEvidence.chatJid,chat,'actual chat JID is retained');assert.equal(normalized.metadata.identityEvidence.senderLid,'151539800895531@lid','source LID evidence is retained');assert.equal(normalized.metadata.identityEvidence.bridgeAccountJid,owner+'@s.whatsapp.net','bridge account JID is retained');
+console.log('Cash payment identity gate: 11 checks passed');
