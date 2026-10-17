@@ -9,7 +9,7 @@ const message=(overrides={})=>({externalId:'fixture-'+Math.random(),chatId:chat,
 const route=m=>routeMessage(state,m);
 process.env.OWNER_PHONE='';
 process.env.ACCOUNTANT_PHONE='';
-assert.equal(route(message()).financeAllowed,false,'missing fixed identity env fails closed');
+assert.equal(route(message()).financeAllowed,true,'approved actual Owner-to-Accountant binding works without a separate env enablement gate');
 process.env.OWNER_PHONE=owner;
 process.env.ACCOUNTANT_PHONE=accountant;
 assert.equal(route(message()).financeAllowed,true,'verified Owner to actual Accountant direct chat is allowed');
