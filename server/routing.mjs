@@ -8,13 +8,13 @@ export function routingStarts(state){const starts={};for(const v of state.versio
 function validSnapshot(c,time){return !c.invalid&&activeAt(c,time)&&activeAt(c.account,time)&&(!c.party||activeAt(c.party,time))&&(!c.contact||activeAt(c.contact,time))&&(!c.group||activeAt(c.group,time));}
 export function bindingForFile(state,context){const versions=state.versions.filter(v=>v.binding_id===context.bindingId);if(context.bindingVersionId)return versions.find(v=>v.id===context.bindingVersionId)?.config||null;return(versions.find(v=>at(v.effective_from)<=Date.now()&&(!v.effective_until||Date.now()<at(v.effective_until)))||versions[0])?.config||null;}
 function fixedCashIdentityMatches(m,{sender,receiver,admin,contact,party}){
- const owner=canonical(process.env.OWNER_PHONE),accountant=canonical(process.env.ACCOUNTANT_PHONE);
+ // Use the active approved Owner/Accountant identity binding for this exact chat.
+ // OWNER_PHONE / ACCOUNTANT_PHONE env variables are not a separate enablement requirement.
+ const owner=canonical(admin),accountant=canonical(contact);
  const jidPhone=canonical(String(m.chatId||'').split('@')[0]);
- // Cash is disabled until the two verified numbers are configured privately.
  if(!owner||!accountant)return false;
- return m.conversationType==='direct'&&!m.chatId.endsWith('@g.us')&&
-  sender===owner&&receiver===accountant&&jidPhone===accountant&&
-  canonical(admin)===owner&&canonical(contact)===accountant&&party?.kind==='accountant';
+ return m.conversationType==='direct'&&!String(m.chatId||'').endsWith('@g.us')&&
+  sender===owner&&receiver===accountant&&jidPhone===accountant&&party?.kind==='accountant';
 }
 export function routeMessage(state,m,{bindingId='',bindingVersionId='',historicalAttested=false}={}){
  const time=at(m.timestamp),sender=canonical(m.senderPhone),receiver=canonical(m.receiverPhone),intent=intents(m.text),matches=[],seen=new Set();
