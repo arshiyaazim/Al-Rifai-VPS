@@ -1,6 +1,6 @@
 import assert from'node:assert/strict';import fs from'node:fs/promises';import os from'node:os';import path from'node:path';import{once}from'node:events';import{createHash}from'node:crypto';
 import{testDatabase}from'./db-harness.mjs';import{migrate}from'../database/migrate.mjs';import{createApp}from'../server/app.mjs';import{hashPassword}from'../server/auth.mjs';import{uuid}from'../server/records.mjs';import{runCycle,normalizeMessage}from'../integrations/mcp-consumer.mjs';
-process.env.CASH_OWNER_PHONE='01880446111';process.env.CASH_ACCOUNTANT_PHONE='01912345678';
+process.env.OWNER_PHONE='01880446111';process.env.ACCOUNTANT_PHONE='01912345678';
 const dir=await fs.mkdtemp(path.join(os.tmpdir(),'alrifai-v2-'));let db,app,origin,cookie,checks=0;const pass='synthetic-owner-pass-123',email='v2-owner@example.invalid';const ok=(v,m)=>{assert.ok(v,m);checks++;};
 async function req(url,{method='GET',data,token,anonymous=false}={}){const r=await fetch(origin+url,{method,headers:{...(!anonymous&&cookie?{Cookie:cookie}:{}),...(data?{'Content-Type':'application/json',Origin:origin}:{}),...(token?{Authorization:'Bearer '+token}:{})},body:data?JSON.stringify(data):undefined});const raw=await r.text();let body;try{body=JSON.parse(raw)}catch{body=raw}return{status:r.status,body,headers:r.headers};}
 const manage=async(kind,data,id)=>{const r=await req('/api/management/'+kind+(id?'/'+id:''),{method:id?'PATCH':'POST',data});assert.equal(r.status,200,JSON.stringify(r.body));return r.body;};
