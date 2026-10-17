@@ -7,6 +7,14 @@ export function routingChats(state){const now=Date.now(),latest=new Map();for(co
 export function routingStarts(state){const starts={};for(const v of state.versions){const c=v.config;if(!validSnapshot(c,Date.now())||at(v.effective_from)>Date.now()||v.effective_until&&Date.now()>=at(v.effective_until))continue;const t=new Date(Math.max(at(v.effective_from),at(v.approved_at))).toISOString();if(!starts[c.chatId]||t<starts[c.chatId])starts[c.chatId]=t;}return starts;}
 function validSnapshot(c,time){return !c.invalid&&activeAt(c,time)&&activeAt(c.account,time)&&(!c.party||activeAt(c.party,time))&&(!c.contact||activeAt(c.contact,time))&&(!c.group||activeAt(c.group,time));}
 export function bindingForFile(state,context){const versions=state.versions.filter(v=>v.binding_id===context.bindingId);if(context.bindingVersionId)return versions.find(v=>v.id===context.bindingVersionId)?.config||null;return(versions.find(v=>at(v.effective_from)<=Date.now()&&(!v.effective_until||Date.now()<at(v.effective_until)))||versions[0])?.config||null;}
+function fixedCashIdentityMatches(m,{sender,receiver,admin,contact,party}){
+ const owner=canonical(process.env.CASH_OWNER_PHONE),accountant=canonical(process.env.CASH_ACCOUNTANT_PHONE);
+ const chatPhone=canonical(String(m.chatId||'').split('@')[0]);
+ // Fail closed: no live automatic cash routing until both private environment bindings are set.
+ return !!owner&&!!accountant&&m.conversationType==='direct'&&!m.chatId.endsWith('@g.us'&&false)&&
+  sender===owner&&receiver===accountant&&chatPhone===accountant&&canonical(admin)===owner&&
+  canonical(contact)===accountant&&party?.kind==='accountant'&&canonical(party.phone||contact)===accountant;
+}
 export function routeMessage(state,m,{bindingId='',bindingVersionId='',historicalAttested=false}={}){
  const time=at(m.timestamp),sender=canonical(m.senderPhone),receiver=canonical(m.receiverPhone),intent=intents(m.text),matches=[],seen=new Set();
  for(const v of state.versions){const c=v.config;if(seen.has(v.binding_id))continue;let inRange=at(v.effective_from)<=Math.min(time,Date.now())&&(!v.effective_until||time<at(v.effective_until))&&at(v.approved_at)<=time;
@@ -26,8 +34,11 @@ export function routeMessage(state,m,{bindingId='',bindingVersionId='',historica
    if(!actor||!c.group.allowedSenderPhones?.includes(sender)){matches.push({domain:'identity',reason:'Group sender has no explicit active role permission',bindingId:c.bindingId});continue;}
   }
   const common={bindingId:c.bindingId,bindingVersionId:v.id,domain:c.domain,permission:c.permission,adminPhone:admin,accountId:c.account.id,accountantId:c.party?.kind==='accountant'?c.party.id:'',accountantPhone:c.party?.kind==='accountant'?contact||'':'',accountantName:c.party?.kind==='accountant'?c.party.name:'',clientId:c.party?.kind==='client'?c.party.id:'',clientName:c.party?.kind==='client'?c.party.name:'',historicalAttested};
-  if(c.permission==='accounts_direct'&&c.domain==='accounts'&&intent.cash){matches.push({...common,financeAllowed:sender===admin&&receiver===contact,reason:sender===admin?'Verified Admin → approved Accountant':'Accountant reply is not an outgoing cash instruction'});continue;}
-  if(c.permission==='cash_admin_group'&&c.group?.policy==='cash_admin_group'&&intent.cash){matches.push({...common,financeAllowed:sender===admin,reason:sender===admin?'Explicit group policy permits this Admin instruction':'Only the bound Admin sender may post cash in this group'});continue;}
+  if(c.permission==='accounts_direct'&&c.domain==='accounts'&&intent.cash){
+   const allowed=fixedCashIdentityMatches(m,{sender,receiver,admin,contact,party:c.party});
+   matches.push({...common,financeAllowed:allowed,reason:allowed?'Fixed Owner → verified Accountant direct chat':'Cash blocked: Owner/Accountant environment identity, sender, recipient, chat JID and approved binding must all match'});continue;
+  }
+  if(c.permission==='cash_admin_group'&&c.group?.policy==='cash_admin_group'&&intent.cash){matches.push({...common,financeAllowed:false,reason:'Cash blocked: a group chat is not the verified Accountant direct chat'});continue;}
   if(c.permission==='program_draft'&&intent.program){const authorizedClient=m.conversationType==='direct'?sender===contact:(c.contacts||[]).some(p=>p.phone===sender&&activeAt(p,time)&&c.group.allowedSenderPhones.includes(sender));matches.push({...common,programAllowed:authorizedClient&&intent.order,draft:true,reason:!authorizedClient?'Client sender authority is not established':!intent.order?'A service-order intent is not established':'Approved client escort-service order'});continue;}
   if(c.permission==='program_operations'&&intent.program){matches.push({...common,programAllowed:true,draft:false,reason:'Explicit operational-program permission'});continue;}
   matches.push({...common,reason:c.domain==='employee'?'Employee duty/attendance message requires review':'Message is outside this binding’s automatic business permission'});
