@@ -16,6 +16,6 @@ assert.equal(route(message({senderPhone:accountant,receiverPhone:owner})).financ
 assert.equal(route(message({receiverPhone:'01899999999',text:'pay 01912345678 cash 500/- employee 01833333333'})).financeAllowed,false,'Accountant number in body cannot override actual recipient');
 assert.equal(route(message({chatId:'120363400000000000@g.us',conversationType:'group',receiverPhone:''})).financeAllowed,false,'group cash is blocked');
 assert.equal(route(message({chatId:'151539800895531@lid'})).financeAllowed,false,'unresolved LID is blocked');
-assert.equal(route(message({text:'Hello, how are you?'})).financeAllowed,undefined,'ordinary conversation is not a cash instruction');
+assert.equal(route(message({text:'Hello, how are you?'})).financeAllowed,false,'ordinary conversation is not a cash instruction');
 assert.equal(route(message({senderPhone:'01899999999'})).financeAllowed,false,'unknown sender is blocked');
 console.log('Cash payment identity gate: 8 checks passed');
