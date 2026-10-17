@@ -2,16 +2,16 @@
 
 ## Local PASS
 
-Final automated totals: **247 checks** = baseline 140 + dynamic-routing/import 107. `npm run check` clean; `npm run build` successful. Tests use temporary disk-backed **PGlite PostgreSQL 18.6**, real HTTP/SSE, actual Python parsing and synthetic MCP stdio. They do not contact owner WhatsApp or production DB and do not emulate PostgreSQL TCP permissions/network/concurrency in full.
+Previously recorded baseline: **247 checks** = baseline 140 + dynamic-routing/import 107; `npm run check` and `npm run build` were reported clean before the 2026-10-17 cash-policy patch. The new branch adds a focused cash identity test and updates routing expectations, but these changed tests, type-check and build have **not yet been executed in this environment**. Do not treat the historical 247 total as validation of this patch. Tests use temporary disk-backed **PGlite PostgreSQL 18.6**, real HTTP/SSE, actual Python parsing and synthetic MCP stdio. They do not contact owner WhatsApp or production DB and do not emulate PostgreSQL TCP permissions/network/concurrency in full.
 
 | Area | Tested behavior |
 | --- | --- |
 | Schema | Fresh/repeated migration, no business seed, v1→v2 preserves old records/password and promotes first owner |
 | Privacy/roles | No login/forged Sites headers denied, wrong password/session/origin checks, Viewer writes denied; ordinary Admin cannot configure authority |
 | CRUD | Create/view/edit, revision conflict, soft-delete/restore and persistence |
-| Identity | Dynamic multiple Admin/Accountant/client contacts; exact scope/direction before parse, unknown aliases and CSV identity bypass denied |
+| Identity | Management may retain multiple configured parties, but automatic WhatsApp cash is locked to private fixed Owner/Accountant identities; actual direct chat/direction is checked before parsing; unverified LID and body-only recipient claims fail closed |
 | Time/changes | Future binding gate, phone replacement follows JID, scheduled change leaves old number effective, unrelated edit preserves scheduled timeline; no automatic historical authorization |
-| Group routing | Default review, explicit policy + actual authorized sender; unrelated member cannot post |
+| Group routing | Default review; even explicit group cash policy cannot create a Cash Transaction under the fixed direct-chat-only rule |
 | Client | Service request creates Draft without assignment; multiple representatives reuse one Draft; client filter and assistant query |
 | Employee/payout | Owner's multiline one-number/two-number rules; payout is not employee identity; employee-domain message is not cash |
 | Imports | Preview writes no business records; same/expanded exports, stable-ID CSV reorder, changed-source review, exact original download, cancel/retry/stale preview |
@@ -32,7 +32,7 @@ Real VPS/SSH, existing PostgreSQL TCP role/network, Docker image execution, syst
 
 - No image OCR, signature recognition or release-slip/voucher classifier. Media originals need human extraction/verification; omitted-media TXT contains no image pixels.
 - TXT lacks upstream message IDs. Same-minute sender reorder/edits and ID-less CSV full-identity corrections can be ambiguous. Review and stable source IDs are required; universal no-missing/no-duplicate assurance is not justified.
-- MCP can only read the bridge's accessible cache/history. Observed edits within the poll window become review; arbitrary old edits outside it or deleted upstream history are not guaranteed. Gaps stop cursor advancement. No outbound send/reply/delete tools.
+- MCP can only read the bridge's accessible cache/history. This adapter currently reads profile/messages/context but not the contact book, so live Owner/Accountant contact-book names and JID/LID mappings remain unverified. Observed edits within the poll window become review; arbitrary old edits outside it or deleted upstream history are not guaranteed. Gaps stop cursor advancement. No outbound send/reply/delete tools.
 - New permission is not retroactive. Explicit historical-file confirmation is owner attestation, not independent transport proof. A trusted producer token cannot prove the producer is uncompromised.
 - Employee duty/attendance messages queue review; no automatic payroll/attendance/settlement engine. Draft is not confirmed assignment.
 - Assistant is a limited structured read-only query assistant; it is not an external general-purpose model.
