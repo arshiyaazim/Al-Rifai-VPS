@@ -66,3 +66,8 @@ Authorization: Bearer SOURCE_TOKEN; source must be enabled. Tokens authenticate 
 - GET /api/integrations/{sourceId}/query?kind=program|transaction: optional owner-enabled readAccess, default denied.
 
 See DATA-SOURCES.md for original envelope and identity contract. Invalid producer metadata cannot be independently authenticated by content extraction.
+
+
+## Cash payment identity gate
+
+All automatic WhatsApp cash writes pass the server-side fixed Owner → Accountant gate in `server/routing.mjs`; frontend fields or a phone number inside message text cannot override it. `CASH_OWNER_PHONE` and `CASH_ACCOUNTANT_PHONE` must be configured in private VPS environment after verification. Actual direct chat JID, sender/recipient, cash intent and employee mobile are required. Unresolved LID/JID, mismatched recipient, group chat, Accountant-originated message, missing employee mobile or duplicate results in no automatic Cash Transaction. Source-message and business-key idempotency remain mandatory. See [CASH-PAYMENT-IDENTITY.md](CASH-PAYMENT-IDENTITY.md).
