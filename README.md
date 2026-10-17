@@ -59,8 +59,8 @@ Local automated verification: **২৪৭ checks PASS** (১৪০ baseline + �
 
 This is a mandatory business rule for every WhatsApp cash-payment intake, parser, import/backfill path, API and database writer. It remains in force until the Owner explicitly changes it.
 
-1. Sender must equal the privately configured, verified `CASH_OWNER_PHONE`.
-2. The actual direct recipient and actual direct chat JID must resolve to the verified `CASH_ACCOUNTANT_PHONE`. A phone number merely written in message text is not proof of the recipient. Group chats and unresolved LID/JID mappings are blocked for cash.
+1. Sender must equal the privately configured, verified `OWNER_PHONE`.
+2. The actual direct recipient and actual direct chat JID must resolve to the verified `ACCOUNTANT_PHONE`. A phone number merely written in message text is not proof of the recipient. Group chats and unresolved LID/JID mappings are blocked for cash.
 3. Text must contain cash/payment intent.
 4. Employee mobile must be reliably extracted; otherwise create no Cash Transaction and retain a review item.
 5. Validate available amount, date/time, payment details, source identity and timestamp.
