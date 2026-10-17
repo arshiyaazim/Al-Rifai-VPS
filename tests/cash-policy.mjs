@@ -7,11 +7,11 @@ const config={bindingId:'binding-fixed',status:'active',domain:'accounts',permis
 const state={source:{id:'source-test',config:{allowedChatIds:[chat]}},versions:[{id:'version-fixed',binding_id:'binding-fixed',config,effective_from:earlier,approved_at:earlier,effective_until:null}]};
 const message=(overrides={})=>({externalId:'fixture-'+Math.random(),chatId:chat,conversationType:'direct',senderPhone:owner,receiverPhone:accountant,timestamp:now,text:'Employee payment cash 500/- ID 01833333333',...overrides});
 const route=m=>routeMessage(state,m);
-process.env.CASH_OWNER_PHONE='';
-process.env.CASH_ACCOUNTANT_PHONE='';
+process.env.OWNER_PHONE='';
+process.env.ACCOUNTANT_PHONE='';
 assert.equal(route(message()).financeAllowed,false,'missing fixed identity env fails closed');
-process.env.CASH_OWNER_PHONE=owner;
-process.env.CASH_ACCOUNTANT_PHONE=accountant;
+process.env.OWNER_PHONE=owner;
+process.env.ACCOUNTANT_PHONE=accountant;
 assert.equal(route(message()).financeAllowed,true,'verified Owner to actual Accountant direct chat is allowed');
 assert.equal(route(message({senderPhone:accountant,receiverPhone:owner})).financeAllowed,false,'Accountant-originated message is blocked');
 assert.equal(route(message({receiverPhone:'01899999999',text:'pay 01912345678 cash 500/- employee 01833333333'})).financeAllowed,false,'Accountant number in body cannot override actual recipient');
