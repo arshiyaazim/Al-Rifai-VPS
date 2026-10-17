@@ -53,3 +53,21 @@ npm run build
 ```
 
 Local automated verification: **২৪৭ checks PASS** (১৪০ baseline + ১০৭ dynamic routing/import), type-check clean, production build সফল। বাস্তব VPS/WhatsApp/QR, Docker runtime ও browser/device QA এই প্যাকেজ তৈরিতে চালানো হয়নি। বর্তমান deployed Sites পেজ পরিবর্তন বা public publish করা হয়নি।
+
+
+## Permanent Owner → Accountant Cash Payment Gate (2026-10-17)
+
+This is a mandatory business rule for every WhatsApp cash-payment intake, parser, import/backfill path, API and database writer. It remains in force until the Owner explicitly changes it.
+
+1. Sender must equal the privately configured, verified `CASH_OWNER_PHONE`.
+2. The actual direct recipient and actual direct chat JID must resolve to the verified `CASH_ACCOUNTANT_PHONE`. A phone number merely written in message text is not proof of the recipient. Group chats and unresolved LID/JID mappings are blocked for cash.
+3. Text must contain cash/payment intent.
+4. Employee mobile must be reliably extracted; otherwise create no Cash Transaction and retain a review item.
+5. Validate available amount, date/time, payment details, source identity and timestamp.
+6. Deduplicate both the source message (source + message ID + chat) and the payment instruction/business key. Changed source content requires review, not a second payment.
+
+Any failed/unknown check means **no automatic Cash Transaction**. Accountant-originated replies, ordinary chat, unauthorized groups, and unrelated chats cannot become Owner payment instructions. A manual entry is a separate, authenticated human workflow and must not be represented as a WhatsApp-verified instruction.
+
+**Identity/privacy:** this repository is public. Never put real phone numbers, contact-book exports, live JIDs/LIDs, access tokens or secrets in README, committed `.env`, SQL fixtures or public issue text. Put verified phone numbers only in the private VPS `.env`. Keep a private operational identity record containing verified Owner display/contact name, phone, chat JID, WhatsApp JID/LID mapping, Accountant contact-book display name, phone, JID/LID, bridge/account number, evidence source and verification timestamp. Until verified, mark each field `UNVERIFIED`; do not guess.
+
+**Fixed frontend URL and app flow:** preserve the current owner-approved frontend URL, application flow, cash-account screens and business behavior. Do not change the URL, publish/deploy, migrate production data or restart live services without the applicable explicit deployment approval.
