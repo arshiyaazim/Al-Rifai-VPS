@@ -9,11 +9,12 @@ function validSnapshot(c,time){return !c.invalid&&activeAt(c,time)&&activeAt(c.a
 export function bindingForFile(state,context){const versions=state.versions.filter(v=>v.binding_id===context.bindingId);if(context.bindingVersionId)return versions.find(v=>v.id===context.bindingVersionId)?.config||null;return(versions.find(v=>at(v.effective_from)<=Date.now()&&(!v.effective_until||Date.now()<at(v.effective_until)))||versions[0])?.config||null;}
 function fixedCashIdentityMatches(m,{sender,receiver,admin,contact,party}){
  const owner=canonical(process.env.CASH_OWNER_PHONE),accountant=canonical(process.env.CASH_ACCOUNTANT_PHONE);
- const chatPhone=canonical(String(m.chatId||'').split('@')[0]);
- // Fail closed: no live automatic cash routing until both private environment bindings are set.
- return !!owner&&!!accountant&&m.conversationType==='direct'&&!m.chatId.endsWith('@g.us'&&false)&&
-  sender===owner&&receiver===accountant&&chatPhone===accountant&&canonical(admin)===owner&&
-  canonical(contact)===accountant&&party?.kind==='accountant'&&canonical(party.phone||contact)===accountant;
+ const jidPhone=canonical(String(m.chatId||'').split('@')[0]);
+ // Cash is disabled until the two verified numbers are configured privately.
+ if(!owner||!accountant)return false;
+ return m.conversationType==='direct'&&!m.chatId.endsWith('@g.us')&&
+  sender===owner&&receiver===accountant&&jidPhone===accountant&&
+  canonical(admin)===owner&&canonical(contact)===accountant&&party?.kind==='accountant';
 }
 export function routeMessage(state,m,{bindingId='',bindingVersionId='',historicalAttested=false}={}){
  const time=at(m.timestamp),sender=canonical(m.senderPhone),receiver=canonical(m.receiverPhone),intent=intents(m.text),matches=[],seen=new Set();
@@ -27,18 +28,14 @@ export function routeMessage(state,m,{bindingId='',bindingVersionId='',historica
   if(m.conversationType==='direct'){
    const peer=contact||employee;if(peer&&!((sender===admin&&receiver===peer)||(sender===peer&&receiver===admin)))continue;
    if(!peer&&sender!==admin&&receiver!==admin)continue;
-   // Numeric direct JIDs must identify one of the two actual participants.
    const jidPhone=canonical(m.chatId.split('@')[0]);if(/@(?:s\.whatsapp\.net|c\.us)$/.test(m.chatId)&&jidPhone&&![sender,receiver].includes(jidPhone))continue;
   }else{
    const actor=(c.actors||[]).find(a=>a.phone===sender&&activeAt(a,time)&&(!a.party||activeAt(a.party,time)));
    if(!actor||!c.group.allowedSenderPhones?.includes(sender)){matches.push({domain:'identity',reason:'Group sender has no explicit active role permission',bindingId:c.bindingId});continue;}
   }
   const common={bindingId:c.bindingId,bindingVersionId:v.id,domain:c.domain,permission:c.permission,adminPhone:admin,accountId:c.account.id,accountantId:c.party?.kind==='accountant'?c.party.id:'',accountantPhone:c.party?.kind==='accountant'?contact||'':'',accountantName:c.party?.kind==='accountant'?c.party.name:'',clientId:c.party?.kind==='client'?c.party.id:'',clientName:c.party?.kind==='client'?c.party.name:'',historicalAttested};
-  if(c.permission==='accounts_direct'&&c.domain==='accounts'&&intent.cash){
-   const allowed=fixedCashIdentityMatches(m,{sender,receiver,admin,contact,party:c.party});
-   matches.push({...common,financeAllowed:allowed,reason:allowed?'Fixed Owner → verified Accountant direct chat':'Cash blocked: Owner/Accountant environment identity, sender, recipient, chat JID and approved binding must all match'});continue;
-  }
-  if(c.permission==='cash_admin_group'&&c.group?.policy==='cash_admin_group'&&intent.cash){matches.push({...common,financeAllowed:false,reason:'Cash blocked: a group chat is not the verified Accountant direct chat'});continue;}
+  if(c.permission==='accounts_direct'&&c.domain==='accounts'&&intent.cash){const allowed=fixedCashIdentityMatches(m,{sender,receiver,admin,contact,party:c.party});matches.push({...common,financeAllowed:allowed,reason:allowed?'Fixed Owner → verified Accountant direct chat':'Cash blocked: fixed Owner/Accountant phones and actual direct chat must all match'});continue;}
+  if(c.permission==='cash_admin_group'&&c.group?.policy==='cash_admin_group'&&intent.cash){matches.push({...common,financeAllowed:false,reason:'Cash blocked: group chats are not the verified Accountant direct chat'});continue;}
   if(c.permission==='program_draft'&&intent.program){const authorizedClient=m.conversationType==='direct'?sender===contact:(c.contacts||[]).some(p=>p.phone===sender&&activeAt(p,time)&&c.group.allowedSenderPhones.includes(sender));matches.push({...common,programAllowed:authorizedClient&&intent.order,draft:true,reason:!authorizedClient?'Client sender authority is not established':!intent.order?'A service-order intent is not established':'Approved client escort-service order'});continue;}
   if(c.permission==='program_operations'&&intent.program){matches.push({...common,programAllowed:true,draft:false,reason:'Explicit operational-program permission'});continue;}
   matches.push({...common,reason:c.domain==='employee'?'Employee duty/attendance message requires review':'Message is outside this binding’s automatic business permission'});
