@@ -255,8 +255,8 @@ AL-RIFA’I অ্যাপের মূল উদ্দেশ্য হলো �
 
 This rule is persistent until the Owner explicitly revises it and applies consistently to live intake, parsing, reconciliation, historical backfill, API and all business-record writers:
 
-- `sender == CASH_OWNER_PHONE` (verified, privately configured Owner number).
-- The actual recipient and actual direct chat JID must resolve to `CASH_ACCOUNTANT_PHONE`, or an explicitly approved routing rule must independently verify the actual destination. A number in message body alone never verifies recipient. Until JID/LID mapping is verified, block.
+- `sender == OWNER_PHONE` (verified, privately configured Owner number).
+- The actual recipient and actual direct chat JID must resolve to `ACCOUNTANT_PHONE`, or an explicitly approved routing rule must independently verify the actual destination. A number in message body alone never verifies recipient. Until JID/LID mapping is verified, block.
 - Message text must contain cash/payment intent.
 - Employee mobile must be reliably extracted.
 - Validate amount, available payment details, source identity and timestamp.
