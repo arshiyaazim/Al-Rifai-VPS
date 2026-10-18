@@ -79,3 +79,8 @@ Hermes source + binding তৈরি করুন; adapter `integrations/hermes-
 ```
 
 Placeholder values বদলাতে হবে। প্রতি call ১–১০০ envelopes। Identity content থেকে AI দিয়ে বানানো যাবে না। Server source/chat/role/direction enforce করে, কিন্তু compromised trusted producer-এর transport metadata independently authenticate করতে পারে না। Read/query access owner-controlled, default off। Chatbot কখনো WhatsApp পাঠায় বা ledger পরিবর্তন করে না।
+
+
+## Fixed cash identity rule
+
+WhatsApp sources do not gain Cash permission from a display name, group membership, or a number appearing in body text. Automatic Cash requires the verified Owner sender, the actual direct Accountant recipient/chat JID, payment intent, reliable employee mobile, validated available fields and idempotency. Unknown JID/LID or missing private environment identity is review-only. This MCP adapter currently reads profile/messages/context and does not yet read the contact book; do not claim Owner/Accountant contact-book names or LID mappings are verified. See [CASH-PAYMENT-IDENTITY.md](CASH-PAYMENT-IDENTITY.md).

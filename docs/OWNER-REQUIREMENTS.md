@@ -250,3 +250,18 @@ AL-RIFA’I অ্যাপের মূল উদ্দেশ্য হলো �
 **Owner's Core Requirement:**
 
 “আমি ফ্রন্টএন্ড থেকেই Accountant, Client, WhatsApp নম্বর ও Group যুক্ত বা পরিবর্তন করতে চাই। পুরোনো TXT/CSV ফাইল আবার ইমপোর্ট করলে শুধু নতুন তথ্য যুক্ত হবে। Accountant বা Client পরিবর্তন হলেও অ্যাপের কোড পরিবর্তন করতে হবে না। আর প্রতিটি তথ্য সঠিক ব্যবসায়িক বিভাগে যাবে—Accounts-এর তথ্য Accounts-এ, Escort Client-এর তথ্য Vessel Register-এ।”
+
+## Mandatory Owner → Accountant WhatsApp Cash Gate (added 2026-10-17)
+
+This rule is persistent until the Owner explicitly revises it and applies consistently to live intake, parsing, reconciliation, historical backfill, API and all business-record writers:
+
+- `sender` must match the active approved Owner identity binding.
+- The actual recipient and actual direct chat JID must resolve to the active approved Accountant identity binding, or an explicitly approved routing rule must independently verify the actual destination. A number in message body alone never verifies recipient. If actual sender/recipient/JID cannot be established by the active approved binding, block. Do not add a separate environment-variable-presence enablement gate.
+- Message text must contain cash/payment intent.
+- Employee mobile must be reliably extracted.
+- Validate amount, available payment details, source identity and timestamp.
+- Check source-message idempotency and payment-instruction duplicate/business key.
+
+Any missing, conflicting or uncertain condition means no automatic Cash Transaction; retain a review item. Accountant's own message, ordinary conversation, unauthorized group message, or another chat cannot create an Owner payment instruction. Group names or displayed names are not authority. A payment instruction is not proof that funds were received or paid.
+
+Actual phone numbers, names from contact books and live JID/LID mappings must be verified from the private deployed bridge/contact data and stored only in the private VPS operational record and private `.env`; do not invent or publish them in this public repository. The existing owner-approved frontend URL and application flow are fixed and must not change without explicit Owner approval.
